@@ -1,20 +1,25 @@
-#' Checks for the presence of untagged Sunday Monday accumulations
-#' As per Viney and Bates (2004)
-#' Test runs on yearly observations, so the corresponding block index is the year.
+#' Test for Sunday Monday Untagged Accumulations
+#'
+#' Checks for the presence of untagged Sunday Monday accumulations as in
+#' Viney and Bates (2004).
+#'
+#' Test currently runs on yearly observations only. The block index returned
+#' therefore corresponds to the year.
 #'
 #' @param fun_prcp_var standard rnoaa format for precipiation, PRCP,
 #' see rnoaa::meteo_pull_monitors()
 #' @param fun_dapr_var standard rnoaa format for days accumulated precipitaiotn, DAPR,
 #' see rnoaa::meteo_pull_monitors()
 #' @param stn_id the station we want to consider
-#' @param min_perc minimum percentage of weekday observations per year needed to run the test
-#' defaults to 50% of weekdays
+#' @param min_perc minimum proportion of weekday observations per year needed to run the test,
+#' defaults to a half
 #'
 #' @return Returns the a data frame with columns block, which is the year, and p_value.
-#'
+#' @export
 #' @examples
 #'
-#' stn_id = "ASN00010525" #"ASN00022000" #
+#' stn_id = "ASN00010525" #"ASN00022000"
+#'
 #' prcp_var <- meteo_pull_monitors(stn_id,
 #'                                 date_min = "1910-01-01",
 #'                                 date_max = "2000-01-01",
@@ -38,7 +43,7 @@
 #'   ylab("P-Value") +
 #'   ggtitle(paste("Test for Sunday Monday accumulations at", stn_id)) +
 #'   theme_bw()
-
+#'
 sun_mon_untagged_test <- function(fun_prcp_var, fun_dapr_var, stn_id,
                                   min_perc = 0.5){
 
