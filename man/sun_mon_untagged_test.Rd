@@ -16,7 +16,7 @@ see rnoaa::meteo_pull_monitors()}
 \item{stn_id}{the station we want to consider}
 
 \item{min_perc}{minimum proportion of weekday observations per year needed to run the test,
-defaults to half}
+defaults to a half}
 }
 \value{
 Returns the a data frame with columns block, which is the year, and p_value.
@@ -26,8 +26,8 @@ Checks for the presence of untagged Sunday Monday accumulations as in
 Viney and Bates (2004).
 }
 \details{
-Test currently runs on yearly observations only. The corresponding
-block index is therefore the year.
+Test currently runs on yearly observations only. The block index returned
+therefore corresponds to the year.
 }
 \examples{
 

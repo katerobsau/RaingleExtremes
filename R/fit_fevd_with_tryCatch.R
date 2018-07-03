@@ -1,7 +1,14 @@
-#' Fits a GEV distribution and returns the parameters
-#' This is a wrapper to handle any errors
+#' Get Stationary GEV parameters
+#'
+#' Fits a GEV distribution and returns the parameters.
+#' This is a wrapper with a try catch statement to handle any errors
 #'
 #' @param x a vector of block maximum observations
+#'
+#' @return Returns stationary gev parameters.
+#' If input vector x is invalid returns c(NA, NA, NA)
+#'
+#' @export
 #'
 #' @examples
 #' x1 = revd(100,1,1,1)

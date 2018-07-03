@@ -2,17 +2,20 @@
 % Please edit documentation in R/fit_fevd_with_tryCatch.R
 \name{fit_fevd_with_tryCatch}
 \alias{fit_fevd_with_tryCatch}
-\title{Fits a GEV distribution and returns the parameters
-This is a wrapper to handle any errors}
+\title{Get Stationary GEV parameters}
 \usage{
 fit_fevd_with_tryCatch(x)
 }
 \arguments{
 \item{x}{a vector of block maximum observations}
 }
+\value{
+Returns stationary gev parameters.
+If input vector x is invalid returns c(NA, NA, NA)
+}
 \description{
-Fits a GEV distribution and returns the parameters
-This is a wrapper to handle any errors
+Fits a GEV distribution and returns the parameters.
+This is a wrapper with a try catch statement to handle any errors
 }
 \examples{
 x1 = revd(100,1,1,1)
