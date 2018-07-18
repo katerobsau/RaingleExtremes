@@ -16,7 +16,12 @@
 plot_dates_spatially <- function(date_range, prcp_var, mdpr_var, dapr_var,
                                  stn_meta_data){
   #, stn_id, search_radius = 20){
-
+  
+  print("HARD CODE")
+  text.type.large <- element_text(size = 12)
+  text.type.small <- element_text(size = 10)
+  
+  
   # Visualise the data spatially for a set of dates
   subset_prcp_var <- dplyr::filter(prcp_var, date %in% date_range)
   subset_mdpr_var <- dplyr::filter(mdpr_var, date %in% date_range)
@@ -99,7 +104,12 @@ plot_dates_spatially <- function(date_range, prcp_var, mdpr_var, dapr_var,
     theme_bw() +
     xlab("Longitude") +
     ylab("Latitude") +
-    coord_fixed()
+    coord_fixed() +
+    theme(legend.text = text.type.small,
+          axis.text = text.type.small,
+          plot.title = text.type.large,
+          legend.title = text.type.small,
+          axis.title = text.type.small)
 
   # spatial_plot
 
