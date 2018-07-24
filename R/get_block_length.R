@@ -3,6 +3,9 @@
 #' @param start_month beginning of the block.
 #' @param end_month end of the block.
 #' @return The number of days between the \code{start_month} and the \code{end_month}. Function ignores February 29.
+#'
+#' @export
+#'
 #' @examples
 #' get_block_length(1, 12)
 #' get_block_length(12, 2)

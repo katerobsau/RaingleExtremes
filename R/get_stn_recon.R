@@ -22,6 +22,8 @@
 #' @return Returns a data frame with columns of
 #' date, id, recon_prcp and recon_flag corresponding to the prcp at the station
 #'
+#' @export
+#'
 #' @examples
 #' stn_id = "ASN00040383"
 #' meta_data = readRDS("Data/AS_meta_data.rds")

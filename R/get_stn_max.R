@@ -17,6 +17,8 @@
 #' max is set to \code{NA} when there are not enough num_obs
 #' observations per block based on the \code{min_perc}
 #'
+#' @export
+#'
 #' @examples
 #' prcp = c(1:365, 2*(1:365))
 #' dates = seq(as.Date("1910-01-01"), as.Date("1911-12-31"), by = "days")

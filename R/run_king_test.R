@@ -11,6 +11,8 @@
 #' upper for when the freq of the next day is above the confidence interval,
 #' bool for when both the lower and upper indicate that there are untagged accumulations
 #'
+#' @export
+#'
 #' @examples
 #'
 #' dates = seq(as.Date("1910-01-01"), as.Date("1910-12-31"), by ="days")

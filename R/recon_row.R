@@ -7,6 +7,8 @@
 #' @return Returns a data frame with columns of
 #' date, id, recon_prcp and recon_flag
 #'
+#' @export
+#'
 #' @examples
 #' date = seq(as.Date("1910-01-01"), as.Date("1910-01-12"), by = "days")
 #' id1 = rexp(length(date), rate = 1)

@@ -13,6 +13,8 @@
 #' max is set to \code{NA} when there are not enough nonzero
 #' observations per block based on the \code{min_perc}
 #'
+#' @export
+#'
 #' @examples
 #' prcp1 = c(1:365, 2*(1:365))
 #' prcp2 = c(seq(0.1,36.5, by = 0.1), seq(0.01,3.65, by = 0.01))

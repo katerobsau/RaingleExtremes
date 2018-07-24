@@ -13,6 +13,8 @@
 #' @return Returns the updated station max object that keeps the missing maxima
 #' if the date is common with the neighbours.
 #'
+#' @export
+#'
 #' @examples
 #' stn_id = "ASN00040383"
 #' nbr_id = "ASN00040225"

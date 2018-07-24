@@ -4,6 +4,7 @@
 #' @param prcp a vector of daily precpitation observations (these are assumed sequential)
 #' @param delta_window window to check, i is in the centre of this window (default = 30)
 #' @return Returns a boolean if there a observations in the window
+#' @export
 #'
 #' @examples
 #' prcp = 1:365

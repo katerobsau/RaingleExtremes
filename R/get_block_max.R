@@ -7,6 +7,9 @@
 #' @return Returns the highest observations in the block matching \code{block_val}
 #' The returned data frame has columns of block, data and prcp.
 #' If insufficient data, then \code{NULL} is returned
+#'
+#' @export
+#'
 #' @examples
 #' prcp = c(1:365, 2*(1:365))
 #' dates = seq(as.Date("1910-01-01"), as.Date("1911-12-31"), by = "days")

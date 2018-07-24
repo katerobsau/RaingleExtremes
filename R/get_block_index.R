@@ -5,6 +5,8 @@
 #' @param end_month end of the block
 #' @return Returns the block index for the given date.
 #' The block index is a year, and is the year of the \code{start_month}.
+#' @export
+#'
 #' @examples
 #' get_block_index(as.Date("1910-01-01"), 1, 12)
 #' get_block_index(as.Date("1910-01-01"), 12, 2)
