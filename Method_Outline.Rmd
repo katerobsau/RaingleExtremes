@@ -1,0 +1,140 @@
+---
+title: "Data processing steps"
+author: "Kate Saunders"
+date: "01/09/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(rnoaa)
+library(plotly)
+```
+```{r data, echo = FALSE}
+load("Data/AS_meta_data.RData")
+```
+
+###1. Get Meta Data
+
+We written a little wrapper function, wrapper_get_meta_data(). This wrapper gets all the Australian station data from the R package, RNOAA, which provides an interface with the ftp server that hosts GHCN-Daily. 
+
+```{r, eval = FALSE}
+as_meta_data = wrapper_get_meta_data()
+save(as_meta_data, file = "Data/AS_meta_data.RData")
+```
+
+We have saved this meta data into our package for direct access. There are four precipitation elements. These can be referenced within the meta data using the element codes:  
+* PRCP is the daily precipitation (tenths of a mm)  
+* MDPR is a multiday accumulated total (tenths of a mm) 
+* DAPR is the number of days in a multiday total  
+* DWPR number of days of non-zero rainfall in a multiday total.  
+
+```{r, eval = FALSE}
+load("Data/AS_meta_data.RData")
+prcp_meta_data = dplyr::filter(as_meta_data, element == "PRCP")
+```
+
+A summary of some of the some features of the data is given graphically below.
+```{r, echo = FALSE}
+prcp_meta_data = dplyr::filter(as_meta_data, element == "PRCP")
+ggplot(prcp_meta_data, aes(x = longitude, y = latitude)) + geom_point(size = 0.1)
+ggplot(prcp_meta_data) + geom_bar(aes(first_year))
+max_year = max(prcp_meta_data$last_year)
+ggplot(dplyr::filter(prcp_meta_data, last_year < max_year)) + geom_bar(aes(last_year))
+```
+
+### 2. Get Rainfall Data
+
+Once we know the station ID we are intersted in, we can get the station data from GHCN-Daily using the RNOAA package.
+
+```{r, eval = FALSE}
+stn_id = "ASN00040101"
+prcp_var <- rnoaa::meteo_pull_monitors(stn_id,
+                                date_min = "1910-01-01",
+                                date_max = "2010-01-01",
+                                keep_flags = TRUE,
+                                var = "PRCP")
+```
+
+To save time, as getting data from the server can take a while, I chose to save the data. Here is an example of how my wrapper works, into which you can pass all arguements from the `rnoaa::meteo_pull_monitors()` function. I save the data for the set of stn_ids provides into a file of the form `paste(data_dir, element_type, file_str, ".rds", sep ="")`. There is a different file for each precipitation element type. The file string is an option for referenced, with an example of a possible `file_str` being `paste("_xll_", bbox$xll, "_yll_", bbox$yll, "_dx_", dx, "_dy_", dy, ".rds", sep ="")`.
+
+```{r, eval = FALSE}
+data_dir = "my_data_dir/"
+file_str = "my_fav_stns"
+
+# Restrict the date range to these dates
+date_min = "1910-01-01"
+date_max = "2017-12-31"
+
+# Get the data from near my hometown
+stn_ids = as_meta_data %>% 
+  dplyr::filter(longitude >= 152.6 & longitude < 152.8 & 
+                  latitude >= -27.7 & latitude < -27.5 &
+                  element == "PRCP") %>%
+  dplyr::select(id)  %>% 
+  unlist() %>% 
+  as.vector()
+
+# Save out the data      
+wrapper_save_prcp_data(stn_ids = stn_ids, data_dir = data_dir, file_str = file_str,
+               date_min = date_min, date_max = date_max)
+```
+
+### 3. Get Nearby Neighbours
+
+My application area is extremes, therefore it is important to address missingness within our precipitation data. Some studies use gridded observational products to interpolate missing values, however this can result in underestimating extremes. We have chosen to use the nearest neighbour methods. 
+
+To can get all the stations within a given search radius we can use rnoaa::meteo_nearby_stations(). 
+```{r}
+stn_id = "ASN00040101"
+search_radius = 10 #(km)
+
+stn_lat_lon = as_meta_data %>% 
+  dplyr::filter(id == stn_id) %>%
+  select(id, latitude, longitude) %>%
+  distinct() %>%
+  as.data.frame()
+nearby_meta_data <- rnoaa::meteo_nearby_stations(lat_lon_df = stn_lat_lon,
+                                          station_data = as_meta_data, 
+                                          var = "PRCP",
+                                          year_min = 1910,
+                                          radius = search_radius)[[1]]
+```
+
+We have saved the nearest neighbours within a 50 km radius of each station.
+
+```{r}
+prcp_var <- rnoaa::meteo_pull_monitors(monitors = nearby_meta_data$id,
+                                date_min = "1910-01-01",
+                                date_max = "2010-01-01",
+                                keep_flags = TRUE,
+                                var = "PRCP")
+
+ggplot(data = prcp_var %>% 
+         filter(qflag_prcp == " ")) + 
+  geom_point(aes(x= date, y = prcp, group = id)) + 
+  xlim(limits = c("2009-01-01", "2011-01-01"))
+```
+
+
+
+4. Estimate Correlation
+
+5. Add Reconstruction Column Data
+
+6. Get Maxima (raw and reconstructed)
+
+7. Run Viney Bates on raw data
+
+8. Run King Test on raw data
+
+9. Run Chisq Test on raw data
+
+10. Update Quality Flags
+
+11. Review Outlier Flags
+
+12. Save Maxima Data
+

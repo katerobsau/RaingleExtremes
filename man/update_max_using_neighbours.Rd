@@ -5,7 +5,8 @@
 \title{Checks if the date of the missing maximum is similar to neighbours.
 If it is, them it keeps the maxima despite the missing data.}
 \usage{
-update_max_using_neighbours(meta_data, stn_id, max_var, search_radius = 20)
+update_max_using_neighbours(meta_data, stn_id, max_var,
+  search_radius = 20)
 }
 \arguments{
 \item{meta_data}{meta data of the stations}

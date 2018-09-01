@@ -4,8 +4,8 @@
 \alias{utils_correlation}
 \title{Get the correlation between two stations}
 \usage{
-utils_correlation(prcp_df, stn_pair, type = "pearson", min_overlap = 365 *
-  3)
+utils_correlation(prcp_df, stn_pair, type = "pearson",
+  min_overlap = 365 * 3)
 }
 \arguments{
 \item{prcp_df}{has columns of stn ids, but no date just precipitation data}

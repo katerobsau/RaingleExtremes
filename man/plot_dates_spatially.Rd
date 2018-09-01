@@ -4,7 +4,8 @@
 \alias{plot_dates_spatially}
 \title{Produces a spatial plot for a given set of dates and observations}
 \usage{
-plot_dates_spatially(date_range, prcp_var, mdpr_var, dapr_var, stn_meta_data)
+plot_dates_spatially(date_range, prcp_var, mdpr_var, dapr_var,
+  stn_meta_data)
 }
 \arguments{
 \item{date_range}{dates for plotting}

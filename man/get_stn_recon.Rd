@@ -6,9 +6,9 @@
 at a station can be reconstructed}
 \usage{
 get_stn_recon(meta_data, stn_id, search_radius = 20, from_file = TRUE,
-  data_dir = NULL, from_ftp = FALSE, delta_window = 30, min_overlap = 3
-  * 365, min_corr_value = 0.6, corr_type = "spearman", prcp_var = NULL,
-  dx = 1, dy = 1)
+  data_dir = NULL, from_ftp = FALSE, delta_window = 30,
+  min_overlap = 3 * 365, min_corr_value = 0.6,
+  corr_type = "spearman", prcp_var = NULL, dx = 1, dy = 1)
 }
 \arguments{
 \item{meta_data}{standard format from rnoaa}
