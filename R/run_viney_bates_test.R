@@ -11,6 +11,7 @@
 #' @param fun_dapr_var standard rnoaa format for days accumulated precipitaiotn, DAPR,
 #' see rnoaa::meteo_pull_monitors()
 #' @param stn_id the station we want to consider
+#' (optional, otherwise it defaults to the ID in fun_prcp_var)
 #' @param min_perc minimum proportion of weekday observations per year needed to run the test,
 #' defaults to a half
 #'
@@ -33,6 +34,7 @@
 #'                                 var = "DAPR")
 #'
 #' output <- sun_mon_untagged_test(prcp_var, dapr_var, stn_id)
+#' output <- sun_mon_untagged_test(prcp_var, dapr_var)
 #'
 #' ggplot(output, aes(x = block, y = p_value)) +
 #'   geom_hline(yintercept = c(0.0008, 0.5), linetype = "dashed", col = "darkgray", size = 1.1) +
@@ -46,6 +48,14 @@
 #'
 sun_mon_untagged_test <- function(fun_prcp_var, fun_dapr_var, stn_id,
                                   min_perc = 0.5){
+
+  if(missing(stn_id)){
+    all_ids = unique(fun_prcp_var$id)
+    if(length(all_ids) > 1)
+      stop("Error: must specify a station ID")
+    if(length(all_ids) == 1)
+      stn_id = all_ids
+  }
 
   # add a restriction on missing data per year
   min_wday_obs = (365/7*4)*min_perc

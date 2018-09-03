@@ -11,6 +11,7 @@ library(ggplot2)
 library(dplyr)
 library(rnoaa)
 library(plotly)
+library(RaingleExtremes)
 ```
 ```{r data, echo = FALSE}
 load("Data/AS_meta_data.RData")
@@ -78,16 +79,15 @@ stn_ids = as_meta_data %>%
   as.vector()
 
 # Save out the data      
-wrapper_save_prcp_data(stn_ids = stn_ids, data_dir = data_dir, file_str = file_str,
-               date_min = date_min, date_max = date_max)
+wrapper_save_prcp_data(stn_ids = stn_ids, data_dir = data_dir, file_str =   file_str, date_min = date_min, date_max = date_max)
 ```
 
 ### 3. Get Nearby Neighbours
 
-My application area is extremes, therefore it is important to address missingness within our precipitation data. Some studies use gridded observational products to interpolate missing values, however this can result in underestimating extremes. We have chosen to use the nearest neighbour methods. 
+My application area is extremes, therefore it is important to address missingness within our precipitation data. Some studies use gridded observational products to interpolate missing values, however this can result in underestimating extremes. We have chosen instead to use the nearest neighbour infilling. 
 
 To can get all the stations within a given search radius we can use rnoaa::meteo_nearby_stations(). 
-```{r}
+```{r, eval = FALSE}
 stn_id = "ASN00040101"
 search_radius = 10 #(km)
 
@@ -96,6 +96,7 @@ stn_lat_lon = as_meta_data %>%
   select(id, latitude, longitude) %>%
   distinct() %>%
   as.data.frame()
+
 nearby_meta_data <- rnoaa::meteo_nearby_stations(lat_lon_df = stn_lat_lon,
                                           station_data = as_meta_data, 
                                           var = "PRCP",
@@ -103,38 +104,76 @@ nearby_meta_data <- rnoaa::meteo_nearby_stations(lat_lon_df = stn_lat_lon,
                                           radius = search_radius)[[1]]
 ```
 
-We have saved the nearest neighbours within a 50 km radius of each station.
+We have saved the nearest neighbours within a 50 km radius of each station. See the helper file, `helper_get_nbrs.R`.
+
+<!-- # ```{r} -->
+<!-- # prcp_var <- rnoaa::meteo_pull_monitors(monitors = nearby_meta_data$id, -->
+<!-- #                                 date_min = "1910-01-01", -->
+<!-- #                                 date_max = "2010-01-01", -->
+<!-- #                                 keep_flags = TRUE, -->
+<!-- #                                 var = "PRCP") -->
+<!-- # -->
+<!-- # ggplot(data = prcp_var %>% -->
+<!-- #          filter(qflag_prcp == " ")) + -->
+<!-- #   geom_point(aes(x= date, y = prcp, group = id)) + -->
+<!-- #   xlim(limits = c("2009-01-01", "2011-01-01")) -->
+<!-- # ``` -->
+
+4. Estimate Correlation (TUESDAY)
+
+We only use nearest neighbour infilling if the neighbours are highly correlated. We estimate the correlation using spearmans rank correlation, given rainfall is skew and non-linear.
 
 ```{r}
-prcp_var <- rnoaa::meteo_pull_monitors(monitors = nearby_meta_data$id,
-                                date_min = "1910-01-01",
-                                date_max = "2010-01-01",
-                                keep_flags = TRUE,
-                                var = "PRCP")
+1+1
+```
 
-ggplot(data = prcp_var %>% 
-         filter(qflag_prcp == " ")) + 
-  geom_point(aes(x= date, y = prcp, group = id)) + 
-  xlim(limits = c("2009-01-01", "2011-01-01"))
+5. Add Reconstruction Column Data (WEDNESDAY)
+
+6. Get Maxima (raw and reconstructed) (THURSDAY)
+
+## 7. Run Viney Bates on raw data (MONDAY)
+
+To check for untagged accumulations present amongst daily observations we use a test given in Viney and Bates (2004).
+
+```{r}
+
+stn_id = "ASN00010525" #"ASN00022000"
+
+prcp_var <- meteo_pull_monitors(stn_id,
+                                 date_min = "1910-01-01",
+                                 date_max = "2000-01-01",
+                                 keep_flags = TRUE,
+                                 var = "PRCP")
+
+dapr_var <- meteo_pull_monitors(stn_id,
+                                 date_min = "1910-01-01",
+                                 date_max = "2000-01-01",
+                                 keep_flags = TRUE,
+                                 var = "DAPR")
+
+output <- sun_mon_untagged_test(prcp_var, dapr_var, stn_id)
+
+ggplot(output, aes(x = block, y = p_value)) +
+   geom_hline(yintercept = c(0.0008, 0.5), linetype = "dashed", 
+              col = "darkgray", size = 1.1) +
+   geom_point() +
+   geom_line() +
+   scale_y_log10() +
+   xlab("Year") +
+   ylab("P-Value") +
+   ggtitle(paste("Test for Sunday Monday accumulations at", stn_id)) +
+   theme_bw()
 ```
 
 
+8. Run King Test on raw data (FRIDAY)
 
-4. Estimate Correlation
+9. Run Chisq Test on raw data (OPTIONAL)
 
-5. Add Reconstruction Column Data
+10. Update Quality Flags (SATURDAY)
 
-6. Get Maxima (raw and reconstructed)
+11. Review Outlier Flags (OPTIONAL)
 
-7. Run Viney Bates on raw data
+12. Save Maxima Data (SUNDAY)
 
-8. Run King Test on raw data
-
-9. Run Chisq Test on raw data
-
-10. Update Quality Flags
-
-11. Review Outlier Flags
-
-12. Save Maxima Data
-
+ 

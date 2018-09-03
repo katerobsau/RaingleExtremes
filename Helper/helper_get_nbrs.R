@@ -18,6 +18,12 @@ nbr_stns <- rnoaa::meteo_nearby_stations(
     year_min = year_min,
     radius = search_radius)
 
-file_name = paste(data_dir, "nbrs_radius", search_radius, ".rds", sep ="")
-saveRDS(nbr_stns, file = file_name)
+num_nbrs = lapply(nbr_stns, nrow) %>% unlist %>% as.vector()
+col1 = rep(names(nbr_stns), times = num_nbrs)
+col2 = do.call(rbind, nbr_stns)
+nbr_df = data.frame(stn = col1, nbr = col2$id, stringsAsFactors = FALSE) %>%
+  dplyr::filter(stn != nbr)
+
+file_name = paste(data_dir, "nbrs_radius", search_radius, ".rds", sep = "")
+saveRDS(nbr_df, file = file_name)
 
