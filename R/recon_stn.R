@@ -6,6 +6,7 @@
 #'  and the other rownames are neighbouring station ids.
 #'  The values the first column are dates and
 #'  the values are precipitation in all columns
+#' @param delta_window (default = 30) see documentation for check_obs_in_window
 #' @return Returns a data frame with columns of
 #' date, id, recon_prcp and recon_flag
 #'
@@ -62,13 +63,26 @@ recon_stn <- function(prcp_df, delta_window){
   # reconstruct mising observations
   # didn't want to write this in a for loop, but
   # had trouble with apply statement in recon_row
-  for(i in 1:length(na_rows)){
-    row_ind = na_rows[i]
-    if(obs_in_window[i] == TRUE){
-      recon_stn_row = recon_row(prcp_df[row_ind,])
-      recon_stn[row_ind, ] = recon_stn_row
-    }
-  }
+  # for(i in 1:length(na_rows)){
+  #   row_ind = na_rows[i]
+  #   if(obs_in_window[i] == TRUE){
+  #     recon_stn_row = recon_row(prcp_df[row_ind,])
+  #     recon_stn[row_ind, ] = recon_stn_row
+  #   }
+  # }
+
+  na_rows = na_rows[obs_in_window == TRUE]
+  if(length(na_rows) == 0) return(recon_stn)
+
+  recon_list <- mclapply(as.list(na_rows),
+                         function(row_ind, prcp_df){
+                            recon_output = recon_row(prcp_df[row_ind, ])
+                            return(recon_output)
+      },
+      prcp_df = prcp_df,
+      mc.cores = detectCores())
+
+  recon_stn = do.call(rbind, recon_list)
 
   return(recon_stn)
 }

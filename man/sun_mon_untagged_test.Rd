@@ -13,7 +13,8 @@ see rnoaa::meteo_pull_monitors()}
 \item{fun_dapr_var}{standard rnoaa format for days accumulated precipitaiotn, DAPR,
 see rnoaa::meteo_pull_monitors()}
 
-\item{stn_id}{the station we want to consider}
+\item{stn_id}{the station we want to consider
+(optional, otherwise it defaults to the ID in fun_prcp_var)}
 
 \item{min_perc}{minimum proportion of weekday observations per year needed to run the test,
 defaults to a half}
@@ -46,6 +47,7 @@ dapr_var <- meteo_pull_monitors(stn_id,
                                 var = "DAPR")
 
 output <- sun_mon_untagged_test(prcp_var, dapr_var, stn_id)
+output <- sun_mon_untagged_test(prcp_var, dapr_var)
 
 ggplot(output, aes(x = block, y = p_value)) +
   geom_hline(yintercept = c(0.0008, 0.5), linetype = "dashed", col = "darkgray", size = 1.1) +

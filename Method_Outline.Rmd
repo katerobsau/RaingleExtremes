@@ -119,21 +119,93 @@ We have saved the nearest neighbours within a 50 km radius of each station. See 
 <!-- #   xlim(limits = c("2009-01-01", "2011-01-01")) -->
 <!-- # ``` -->
 
-4. Estimate Correlation (TUESDAY)
+#4. Estimate Correlation
 
-We only use nearest neighbour infilling if the neighbours are highly correlated. We estimate the correlation using spearmans rank correlation, given rainfall is skew and non-linear.
+We only use nearest neighbour infilling if the neighbours are highly correlated. We estimate the correlation using spearmans rank correlation, given rainfall is skew and non-linear. The function to estimate the correlation is utils_correlation()
 
 ```{r}
-1+1
+stn_id = "ASN00040101"
+search_radius = 10 #(km)
+
+stn_lat_lon = as_meta_data %>% 
+  dplyr::filter(id == stn_id) %>%
+  select(id, latitude, longitude) %>%
+  distinct() %>%
+  as.data.frame()
+
+nearby_meta_data <- rnoaa::meteo_nearby_stations(lat_lon_df = stn_lat_lon,
+                                          station_data = as_meta_data, 
+                                          var = "PRCP",
+                                          year_min = 1910,
+                                          radius = search_radius)[[1]]
+nbr_ids = nearby_meta_data$id %>% unique()
+nbr_ids = nbr_ids[2:4]
+
+prcp_var <- rnoaa::meteo_pull_monitors(nbr_ids,
+                                date_min = "1910-01-01",
+                                date_max = "2010-01-01",
+                                keep_flags = TRUE,
+                                var = "PRCP")
+
+prcp_spread = prcp_var %>%
+    dplyr::filter(id %in% nbr_ids) %>%
+    dplyr::filter(qflag_prcp == " ") %>%
+    dplyr::select(date, id, prcp) %>%
+    tidyr::spread(key = id, value = prcp) %>%
+    dplyr::select(-date)
+
+utils_correlation(prcp_spread, nbr_ids[1:2], type = "spearman")
+utils_correlation(prcp_spread, nbr_ids[1:3], type = "spearman")
 ```
 
-5. Add Reconstruction Column Data (WEDNESDAY)
+We have saved the correlation for nearest neighbours within a 50 km radius of each station, see the helper file, `helper_get_corr.R`. (SLOW)
+
+#5. Add Reconstruction Column Data
+We have written two functions to help with reconstruction. The first is recon_row(). An example of this function is given below.
+
+```{r}
+date = seq(as.Date("1910-01-01"), as.Date("1910-01-12"), by = "days")
+id1 = rexp(length(date), rate = 1)
+id2 = id1 + rnorm(length(date), 0, 1)
+id3 = id1 + rnorm(length(date), 0.5, 2)
+prcp_df = data.frame(date, id1, id2, id3)
+prcp_df$id1[1:10] = NA
+prcp_df$id2[1:5] = NA
+prcp_df$id3[1] = NA
+recon_row(prcp_df[1,])
+recon_row(prcp_df[2,])
+recon_row(prcp_df[6,])
+recon_row(prcp_df[11,])
+recon_df = NULL
+for(i in 1:length(date)){
+  recon_df = rbind(recon_df, recon_row(prcp_df[i, ]))
+}
+recon_df
+```
+
+The second, recon_stn(), loops over recon_row() and reconstructs the entire station record.
+
+```{r}
+date = seq(as.Date("1910-01-01"), as.Date("1910-01-31"), by = "days")
+id1 = rexp(length(date), rate = 1)
+id2 = id1 + rnorm(length(date), 0, 1)
+id3 = id1 + rnorm(length(date), 0.5, 2)
+prcp_df = data.frame(date, id1, id2, id3)
+View(recon_stn(prcp_df))
+prcp_df$id1[1:10] = NA
+prcp_df$id2[1:5] = NA
+prcp_df$id3[1] = NA
+View(recon_stn(prcp_df))
+View(recon_stn(prcp_df, delta_window = 3))
+```
+
+We have saved the reconstruction for each station, see the helper file, `helper_recon.R`.
 
 6. Get Maxima (raw and reconstructed) (THURSDAY)
 
-## 7. Run Viney Bates on raw data (MONDAY)
+## 7. Check for Sunday-Monday Untagged Accumulations
 
-To check for untagged accumulations present amongst daily observations we use a test given in Viney and Bates (2004).
+To check for untagged accumulations present amongst daily observations we use a test given in *Why It Never Rains on Sundays?* (Viney and Bates 2004). See the paper and documentation for the function `sun_mon_untagged_test()`.
 
 ```{r}
 
@@ -165,6 +237,7 @@ ggplot(output, aes(x = block, y = p_value)) +
    theme_bw()
 ```
 
+Again we have written wrapper functions to run this test for multiple stations. The helper function, `helper_viney.R` reads in the saved data and then runs the wrapper function, `wrapper_viney.R`. The wrapper runs `sun_mun_untagged_test()` for a given vector of station IDs. We then save the output to another file to be processed later.
 
 8. Run King Test on raw data (FRIDAY)
 

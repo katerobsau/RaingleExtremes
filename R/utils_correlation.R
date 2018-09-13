@@ -3,9 +3,12 @@
 #' @param prcp_df has columns of stn ids, but no date just precipitation data
 #' @param stn_pair is a pair of stn ids - caution input must be characters!!!!
 #' @param type correlation type, default is "pearson" otherwise, "spearman"
-#' @param min_overlap is the number of observations needed before calculating corr(x,y)
+#' @param min_overlap is the number of non-observations needed before calculating corr(x,y)
+#' (default min_overlap = 365)
 #'
 #' @return Returns the correlation between the observation at the two stations
+#'
+#' @export
 #'
 #' @examples
 #' id1 = rexp(365*10, rate = 1)
@@ -16,7 +19,7 @@
 #' utils_correlation(prcp_df, stn_pair, type = "spearman")
 #' utils_correlation(prcp_df, stn_pair, type = "spearman", min_overlap = 100)
 utils_correlation <- function(prcp_df, stn_pair, type = "pearson",
-                             min_overlap = 365*3){
+                             min_overlap = 365){
 
   stn_pair = as.character(stn_pair)
   prcp1 = prcp_df %>% dplyr::select(stn_pair[1]) %>% unlist %>% as.numeric()
