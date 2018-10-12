@@ -91,8 +91,8 @@ for(i in 1:num_files){
   file_str_parts = strsplit(file_str, split ="_")[[1]]
   cell_xll = file_str_parts[3] %>% as.numeric()
   cell_yll = file_str_parts[5] %>% as.numeric()
-  if(cell_xll <= 147) next # file already exists
-  print("Warning: hacked the above code chunk in")
+  # if(cell_xll <= 147) next # file already exists
+  # print("Warning: hacked the above code chunk in")
 
   # read in the precpitation data for that cell
   prcp_var = readRDS(prcp_file)
@@ -209,7 +209,7 @@ stopCluster(cl)
   file_str = substr(prcp_files[i], 5, nchar(prcp_files[1]))
   file_name = paste(data_dir, "RECON", file_str, sep = "")
   recon_var = prcp_var %>%
-    left_join(all_recon_df, by = c("id", "date"))
+    dplyr::left_join(all_recon_df, by = c("id", "date"))
 
   saveRDS(recon_var, file = file_name)
 
