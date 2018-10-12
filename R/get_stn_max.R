@@ -1,7 +1,7 @@
 #' Get the highest observations in the each block
 #'
 #' @param stn_prcp columns of block, date, prcp
-#' @param stn_id (optional) covienient for indexing
+#' @param stn_id (optional) convienient for indexing
 #' @param start_month beginning of the block.
 #' @param end_month end of the block.
 #' @param min_perc minimum percentage of missing data per block (default = 0.95)
@@ -49,8 +49,13 @@ get_stn_max <- function(stn_prcp, stn_id,
     stn_id = "NA"
   }
 
+  # should be if(!('block' %in% names(stn_prcp)%)) do this
   # Add a new column for the blocks
   block <- get_block_index(stn_prcp$date, start_month, end_month)
+  if(all(is.na(block))){
+    # no suitable data
+    return(NULL)
+  }
   stn_prcp <- stn_prcp %>%
     mutate(block = block) %>%
     filter(!is.na(block))

@@ -82,7 +82,9 @@ recon_stn <- function(prcp_df, delta_window){
       prcp_df = prcp_df,
       mc.cores = detectCores())
 
-  recon_stn = do.call(rbind, recon_list)
+  # recon_stn = do.call(rbind, recon_list)
+  recon_stn = bind_rows(recon_list)
 
   return(recon_stn)
+
 }

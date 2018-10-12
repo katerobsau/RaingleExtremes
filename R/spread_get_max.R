@@ -31,7 +31,8 @@ get_spread_max <- function(prcp_spread, start_month, end_month,
     stn_prcp = prcp_spread %>% select(date, prcp = stn_id)
     temp_max_df <- get_stn_max(stn_prcp, stn_id,
                                start_month, end_month,
-                               min_perc = min_perc, rmax = rmax)
+                               min_perc = min_perc,
+                               rmax = rmax)
     max_df <- rbind(max_df, temp_max_df)
   }
 

@@ -19,7 +19,7 @@ load("Data/AS_meta_data.RData")
 
 ###1. Get Meta Data
 
-We written a little wrapper function, wrapper_get_meta_data(). This wrapper gets all the Australian station data from the R package, RNOAA, which provides an interface with the ftp server that hosts GHCN-Daily. 
+We have written a little wrapper function, wrapper_get_meta_data(). This wrapper gets all the Australian station data from the R package, RNOAA, which provides an interface with the ftp server that hosts GHCN-Daily. 
 
 ```{r, eval = FALSE}
 as_meta_data = wrapper_get_meta_data()
@@ -27,8 +27,9 @@ save(as_meta_data, file = "Data/AS_meta_data.RData")
 ```
 
 We have saved this meta data into our package for direct access. There are four precipitation elements. These can be referenced within the meta data using the element codes:  
+
 * PRCP is the daily precipitation (tenths of a mm)  
-* MDPR is a multiday accumulated total (tenths of a mm) 
+* MDPR is a multiday accumulated total (tenths of a mm)  
 * DAPR is the number of days in a multiday total  
 * DWPR number of days of non-zero rainfall in a multiday total.  
 
@@ -59,7 +60,7 @@ prcp_var <- rnoaa::meteo_pull_monitors(stn_id,
                                 var = "PRCP")
 ```
 
-To save time, as getting data from the server can take a while, I chose to save the data. Here is an example of how my wrapper works, into which you can pass all arguements from the `rnoaa::meteo_pull_monitors()` function. I save the data for the set of stn_ids provides into a file of the form `paste(data_dir, element_type, file_str, ".rds", sep ="")`. There is a different file for each precipitation element type. The file string is an option for referenced, with an example of a possible `file_str` being `paste("_xll_", bbox$xll, "_yll_", bbox$yll, "_dx_", dx, "_dy_", dy, ".rds", sep ="")`.
+To save time, as getting data from the server can take a while, I have chosen to save the data. I save the data for the desired set of stn_ids into a file of the form `paste(data_dir, element_type, file_str, ".rds", sep ="")`. An example, file string is `paste("_xll_", bbox$xll, "_yll_", bbox$yll, "_dx_", dx, "_dy_", dy, ".rds", sep ="")`. There is a different file for each precipitation element type. Below is an example of how my wrapper works, into which you can pass all arguements from the `rnoaa::meteo_pull_monitors()` function. 
 
 ```{r, eval = FALSE}
 data_dir = "my_data_dir/"
@@ -104,7 +105,7 @@ nearby_meta_data <- rnoaa::meteo_nearby_stations(lat_lon_df = stn_lat_lon,
                                           radius = search_radius)[[1]]
 ```
 
-We have saved the nearest neighbours within a 50 km radius of each station. See the helper file, `helper_get_nbrs.R`.
+We have saved the nearest neighbours within a 50 km radius of each station. See the helper file, `helper_get_nbrs.R`. We wrote an additional wrapper that saves the distances in `helper_dist_close_nbrs.R`.
 
 <!-- # ```{r} -->
 <!-- # prcp_var <- rnoaa::meteo_pull_monitors(monitors = nearby_meta_data$id, -->

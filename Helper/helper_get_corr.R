@@ -119,5 +119,5 @@ corr_df <- corr_df %>%
   dplyr::filter(corr != temp_na_val) %>%
   dplyr::filter(!is.na(corr))
 
-file_name = paste(data_dir, "corr_information.rds", sep = "")
+file_name = paste(data_dir, "corr_information1.rds", sep = "")
 saveRDS(corr_df, file = file_name)
