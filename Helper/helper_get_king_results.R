@@ -22,7 +22,7 @@ if(wd == local_dir){
 king_alpha = 0.05
 max_data_dir =paste(data_dir, "RCON_MAX/", sep = "")
 list_files = list.files(path = max_data_dir)
-max_files = list_files[stringr::str_detect(list_files, pattern = "AM")]
+max_files = list_files[stringr::str_detect(list_files, pattern = "AM_xll")]
 num_files = length(max_files)
 
 for(i in 1:num_files){

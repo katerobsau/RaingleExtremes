@@ -21,36 +21,50 @@ if(wd == local_dir){
 crit_viney_pval = 0.008
 max_data_dir =paste(data_dir, "RCON_MAX/", sep = "")
 list_files = list.files(path = max_data_dir)
-max_files = list_files[stringr::str_detect(list_files, pattern = "AM")]
-num_files = length(max_files)
+block_patterns = c("AM", "SPR", "WIN", "SUM", "AUT")
+for(block_pattern in block_patterns){
+
+  block_pattern = paste(block_pattern, "xll",sep = "_")
+  max_files = list_files[stringr::str_detect(list_files, pattern = block_pattern)]
+  num_files = length(max_files)
 
 for(i in 1:num_files){
 
-  # run viney test (helper_viney.R)
-  viney_file = paste(c("VINEY", strsplit(max_files[i], split = "_")[[1]][-1]), collapse = "_")
-  viney_filepath = paste(data_dir, viney_file, sep  = '')
-  viney_result = readRDS(viney_filepath)
-
-  # check if we need to worry
-  if(is.null(viney_result)) next
-
-  # filter by suspect pvalues
-  viney_result <- viney_result %>%
-    dplyr::filter(p_value < crit_viney_pval)
-
-  # check again if we need to do any data handling
-  if(nrow(viney_result) == 0) next
-  viney_ids = unique(viney_result$id)
+  print(paste(block_pattern, i, "in", num_files))
 
   # read in our max data
   max_file = paste(max_data_dir, max_files[i], sep = "")
   print(max_file)
   max_var = readRDS(max_file)
 
-  # do we to check any of these
-  suspect_max_var <- max_var %>%
-    dplyr::filter(wday(date) == 2 & id %in% viney_ids)
-  if(nrow(suspect_max_var) == 0) next
+  # run viney test (helper_viney.R)
+  viney_file = paste(c("VINEY", strsplit(max_files[i], split = "_")[[1]][-1]), collapse = "_")
+  viney_filepath = paste(data_dir, viney_file, sep  = '')
+  viney_result = readRDS(viney_filepath)
+
+  # update max file path
+  max_parts = strsplit(max_files[i], split = "_")[[1]]
+  max_start = paste(max_parts[1], "VINEY", sep='_')
+  new_max_file = paste(c(max_start, max_parts[-1]), collapse = "_")
+  new_max_filepath = paste(max_data_dir, new_max_file, sep  = '')
+  print(new_max_filepath)
+
+  # check if we need to worry
+  if(is.null(viney_result)){
+    saveRDS(max_var, new_max_filepath)
+    next
+  }
+
+  # filter by suspect pvalues
+  viney_result <- viney_result %>%
+    dplyr::filter(p_value < crit_viney_pval)
+
+  # check again if we need to do any data handling
+  if(nrow(viney_result) == 0){
+    saveRDS(max_var, new_max_filepath)
+    next
+  }
+  viney_ids = unique(viney_result$id)
 
   # read in the prcp data
   prcp_file = paste(c("PRCP", strsplit(max_files[i], split = "_")[[1]][-1]), collapse = "_")
@@ -61,12 +75,23 @@ for(i in 1:num_files){
   # get the dates before
   for(stn_id in viney_ids){
 
+    # do we to check any of these
+    suspect_max_var <- max_var %>%
+      dplyr::filter(wday(date) == 2 & id == stn_id)
+    if(nrow(suspect_max_var) == 0){
+      saveRDS(max_var, new_max_filepath)
+      next
+    }
+
     stn_prcp <- prcp_var %>%
       dplyr::filter(id == stn_id) %>%
-      dplyr::filter(date %in% lag(suspect_max_var$date)) %>%
+      dplyr::filter(date %in% (suspect_max_var$date - 1)) %>%
       dplyr::filter(prcp == 0)
 
-    if(nrow(stn_prcp) == 0) next
+    if(nrow(stn_prcp) == 0){
+      saveRDS(max_var, new_max_filepath)
+      next
+    }
 
     bad_dates = stn_prcp$date + 1
 
@@ -75,6 +100,9 @@ for(i in 1:num_files){
                                          "ACCUM_SUNMON", qflag_prcp))
   }
 
-  saveRDS(max_var, max_file)
+  # save updated maximums
+  saveRDS(max_var, new_max_filepath)
+
+}
 
 }

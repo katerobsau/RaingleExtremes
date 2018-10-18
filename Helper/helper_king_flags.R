@@ -22,26 +22,46 @@ if(wd == local_dir){
 king_alpha = 0.05
 max_data_dir =paste(data_dir, "RCON_MAX/", sep = "")
 list_files = list.files(path = max_data_dir)
-max_files = list_files[stringr::str_detect(list_files, pattern = "AM")]
-num_files = length(max_files)
+block_patterns = c("AM", "SPR", "WIN", "SUM", "AUT")
+for(block_pattern in block_patterns){
+
+  block_pattern = paste(block_pattern, "VINEY", sep = "_")
+  max_files = list_files[stringr::str_detect(list_files, pattern = block_pattern)]
+  num_files = length(max_files)
 
 for(i in 1:num_files){
 
-  # read king results
-  king_file = paste(c("KING", strsplit(max_files[i], split = "_")[[1]][-1]), collapse = "_")
-  kin_filepath = paste(data_dir, viney_file, sep  = '')
-  king_results <- readRDS(king_filepath)
-
-  # check if we need to worry
-  if(nrow(king_results) == 0) next
-  king_ids = king_results$id %>% unique()
+  print(paste(block_pattern, i, "in", num_files))
 
   # now check relative to our data
   max_file = paste(max_data_dir, max_files[i], sep = "")
   max_var = readRDS(max_file)
 
+  # new max files
+  max_parts = strsplit(max_files[i], split = "_")[[1]]
+  max_start = paste(max_parts[1], "FLAGS", sep='_')
+  new_max_file = paste(c(max_start, max_parts[-1]), collapse = "_")
+  new_max_filepath = paste(max_data_dir, new_max_file, sep  = '')
+  print(new_max_filepath)
+
+  # read king results
+  king_file = paste(c("KING", strsplit(max_files[i], split = "_")[[1]][-(1:2)]), collapse = "_")
+  king_filepath = paste(data_dir, king_file, sep  = '')
+  if(!file.exists(king_filepath)){
+    saveRDS(max_var, new_max_filepath)
+    next
+  }
+  king_results <- readRDS(king_filepath) %>% dplyr::filter(test == TRUE)
+
+  # check if we need to worry
+  if(nrow(king_results) == 0){
+    saveRDS(max_var, new_max_filepath)
+    next
+  }
+  king_ids = king_results$id %>% unique()
+
   # read in the prcp data
-  prcp_file = paste(c("PRCP", strsplit(max_files[i], split = "_")[[1]][-1]), collapse = "_")
+  prcp_file = paste(c("PRCP", strsplit(max_files[i], split = "_")[[1]][-(1:2)]), collapse = "_")
   prcp_filepath = paste(data_dir, prcp_file, sep  = '')
   prcp_var = readRDS(prcp_filepath) %>%
     dplyr::filter(id %in% king_ids)
@@ -49,17 +69,38 @@ for(i in 1:num_files){
   # get the dates before
   for(stn_id in king_ids){
 
+    # get suspect days
     bad_days = king_results %>%
       dplyr::filter(id == stn_id) %>%
       dplyr::select(day) %>%
       as.numeric()
 
+    # do we to check any of these
+    suspect_max_var <- max_var %>%
+      dplyr::filter(id == stn_id) %>%
+      dplyr::filter(wday(date) %in% bad_days)
+    if(nrow(suspect_max_var) == 0){
+      saveRDS(max_var, new_max_filepath)
+      next
+    }
+
+    stn_prcp <- prcp_var %>%
+      dplyr::filter(id == stn_id) %>%
+      dplyr::filter(date %in% (suspect_max_var$date - 1)) %>%
+      dplyr::filter(prcp == 0)
+    if(nrow(stn_prcp) == 0){
+      saveRDS(max_var, new_max_filepath)
+      next
+    }
+
+    bad_days = stn_prcp$date + 1
+
     max_var <- max_var %>%
-      dplyr::mutate(qflag_prcp = if_else(wday(date) %in% bad_days &
+      dplyr::mutate(qflag_prcp = if_else(date %in% bad_days &
                                            id == stn_id &
                                            qflag_prcp != "ACCUM_SUNMON",
                                          "ACCUM_EXTREMES", qflag_prcp)) %>%
-      dplyr::mutate(qflag_prcp = if_else(wday(date) %in% bad_days &
+      dplyr::mutate(qflag_prcp = if_else(date %in% bad_days &
                                            id == stn_id &
                                            qflag_prcp == "ACCUM_SUNMON",
                                            "ACCUM_BOTH", qflag_prcp))
@@ -67,6 +108,8 @@ for(i in 1:num_files){
 
   }
 
-  saveRDS(max_var, max_file)
+  # save updated maximums
+  saveRDS(max_var, new_max_filepath)
 
+}
 }
